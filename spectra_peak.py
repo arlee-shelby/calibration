@@ -60,12 +60,12 @@ print(run_number)
 run = Nab.DataRun(directory, run_number, ignoreEventFile = True)
 print('got run')
 
-# if args['pixel']==None:
-#     pixel_list = get_pixels(run)
-# else:
-#     file = open(args['pixel'],'r')
-#     pixel_list = np.int_(file.read().split(',')).tolist()
-#     print(pixel_list)
+if args['pixel']==None:
+    pixel_list = get_pixels(run)
+else:
+    file = open(args['pixel'],'r')
+    pixel_list = np.int_(file.read().split(',')).tolist()
+    print(pixel_list)
 
 
 # with open(out_put, 'w') as file:
