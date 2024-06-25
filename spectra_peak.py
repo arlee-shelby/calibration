@@ -12,6 +12,8 @@ import pandas as pd
 
 warnings.simplefilter('ignore')
 
+print('hopefully no pycache')
+
 parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
 parser.add_argument('-n', '--nabPy', default='/home', help='Path to nabPy')
 parser.add_argument('-p', '--path', default='/home', help='Path to data directory')
