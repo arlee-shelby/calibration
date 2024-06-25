@@ -19,7 +19,7 @@ parser.add_argument('-n', '--nabPy', default='/home', help='Path to nabPy')
 parser.add_argument('-p', '--path', default='/home', help='Path to data directory')
 parser.add_argument('-r', '--run', default=1374,type=int, help='Run number')
 parser.add_argument('-pix', '--pixel', default='None', help='Pixel list')
-parser.add_argument('-o', '--output', default='output.csv', help='Output file name')
+parser.add_argument('-o', '--output', default='output', help='Output file name')
 parser.add_argument('-s','--slow',default='None',help='Slow data csv file path')
 # parser.add_argument('-c','--config',default='None',help='Config parameters')
 
@@ -189,7 +189,7 @@ df['xray'] = xray_list
 df['chi2_x'] = chi_2_xray
 
 d = pd.DataFrame(df)
-d.to_csv('%s%d'%(out_put,run_number),mode = 'w', header = True, index = False)
+d.to_csv('%s%d.csv'%(out_put,run_number),mode = 'w', header = True, index = False)
 
 # file.close()
 
