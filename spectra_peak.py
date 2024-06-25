@@ -19,10 +19,31 @@ parser.add_argument('-r', '--run', default=1374,type=int, help='Run number')
 parser.add_argument('-pix', '--pixel', default='None', help='Pixel list')
 parser.add_argument('-o', '--output', default='output.csv', help='Output file name')
 parser.add_argument('-s','--slow',default='None',help='Slow data csv file path')
+# parser.add_argument('-c','--config',default='None',help='Config parameters')
 
+args = vars(parser.parse_args())
+
+# with open(args['config']) as f:
+#     for line in f:
+#         if 'nabPy' in line:
+#             nab_path = line.split()[1]
+#             print(nab_path)
+#         if 'data' in line:
+#             directory = line.split()[1]
+#         if 'pixel' in line:
+#             if line.split()[1] != 'NONE':
+#                 file = open(line,'r')
+#                 pixel_list = np.int_(file.read().split(',')).tolist()
+#                 print(pixel_list)
+#             else:
+#                 pixel_list = FitFuncs.get_pixels(run_number)
+#         if 'metadata' in line:
+#             nab_path = line.split()[1]
+
+# print(nab_path)
 
 print('working')
-args = vars(parser.parse_args())
+
 
 nab_path = args['nabPy']
 run_number = args['run']
@@ -34,15 +55,17 @@ import nabPy as Nab
 
 print(args['pixel'])
 
+print(run_number)
+
 run = Nab.DataRun(directory, run_number, ignoreEventFile = True)
 print('got run')
 
-if args['pixel']==None:
-    pixel_list = get_pixels(run)
-else:
-    file = open(args['pixel'],'r')
-    pixel_list = np.int_(file.read().split(',')).tolist()
-    print(pixel_list)
+# if args['pixel']==None:
+#     pixel_list = get_pixels(run)
+# else:
+#     file = open(args['pixel'],'r')
+#     pixel_list = np.int_(file.read().split(',')).tolist()
+#     print(pixel_list)
 
 
 # with open(out_put, 'w') as file:
@@ -151,11 +174,11 @@ if args['slow']== None:
     pass
 else:
     slow_df = pd.read_table(args['slow'],delimiter = '|')
-    b_v = np.array(slow_df['Detector Bias Voltage [V]'][slow_df['RunID']==1374])[0]
+    b_v = np.array(slow_df[slow_df.columns[5]][slow_df['RunID']==run_number])[0]
     df['Bias Voltage'] = [b_v]*len(pixel_list)
 
     for i in range(10,15):
-        val = np.array(slow_df[slow_df.columns[i]][slow_df['RunID']==1374])[0]
+        val = np.array(slow_df[slow_df.columns[i]][slow_df['RunID']==run_number])[0]
         df[slow_df.columns[i]] = [val]*len(pixel_list)
 
 df['ecap'] = ecap_list
@@ -164,7 +187,7 @@ df['xray'] = xray_list
 df['chi2_x'] = chi_2_xray
 
 d = pd.DataFrame(df)
-d.to_csv(out_put,mode = 'w', header = True, index = False)
+d.to_csv('%s%d'%(out_put,run_num),mode = 'w', header = True, index = False)
 
 # file.close()
 
