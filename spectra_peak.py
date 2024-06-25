@@ -187,7 +187,7 @@ df['xray'] = xray_list
 df['chi2_x'] = chi_2_xray
 
 d = pd.DataFrame(df)
-d.to_csv('%s%d'%(out_put,run_num),mode = 'w', header = True, index = False)
+d.to_csv('%s%d'%(out_put,run_number),mode = 'w', header = True, index = False)
 
 # file.close()
 
