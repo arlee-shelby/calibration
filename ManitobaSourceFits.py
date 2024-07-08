@@ -94,7 +94,7 @@ for i in pixel_list:
 
 	#get results
 	results = Funcs.results(run, i, int(rise), int(length), int(decay))
-	prtin('got results')
+	print('got results')
 
 	#generic initialization of fit class
 	conf['capture'] = ''
@@ -152,7 +152,7 @@ for i in pixel_list:
 
 		Sn  = SnCalibration()
 		try:
-			return Sn.fitter(results,pars,bins)
+			return Sn.fitter(results,bins,pars)
 
 		except Exception as e:
 			print(e,i,'failed upper fits')
@@ -197,7 +197,7 @@ for i in pixel_list:
 
 		Sn  = SnCalibration()
 		try:
-			return Sn.fitter(results,pars,bins)
+			return Sn.fitter(results,bins,pars)
 
 		except Exception as e:
 			print(e,i,'failed lower fits')
