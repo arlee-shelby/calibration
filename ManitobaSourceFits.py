@@ -114,7 +114,7 @@ for i in pixel_list:
 	thresh_peak, thresh_start = Funcs.get_peak(results,Sn.X1[0],Sn.X1[1])
 
 	#determine general peak amplitudes and locations for two peaks seen between threshold and xray peaks
-	peak1,center1 = Funcs.get_peak(results,thresh_start+3,thresh_start+6)
+	peak1,center1 = Funcs.get_peak(results,thresh_start+4,thresh_start+6)
 	peak2, center2 = Funcs.get_peak(results,20,28)
 
 	#determine xray peak amplidude and location guess
@@ -127,12 +127,12 @@ for i in pixel_list:
 		conf['xray'] = 'OFF'
 		bins = np.arange(SN.CE1[0],SN.CE2[1])
 
-		if CEpeak2>5:
+		if CEpeak2>=5:
 			conf['capture'] = 'three'
 			CEfit.append(3)
 			pars = [CEpeak1, CEcenter1, 3, CEpeak2, CEcenter2, 3, 1, 2, 1e-8, 1]
 
-		if CEpeak2<5 and CEpeak2>3:
+		if CEpeak2<5 and CEpeak2>=3:
 			conf['capture'] = 'two'
 			CEfit.append(2)
 			print('CE two, pixel:%d'%i)
@@ -144,7 +144,7 @@ for i in pixel_list:
 			print('CE one, pixel:%d'%i)
 			pars = [CEpeak1, CEcenter1, 3, 1, 2, 1e-8, 1]
 
-		if CEcounts<1:
+		if CEcounts<=1:
 			conf['capture'] = 'zero'
 			CEfit.append(0)
 			print('CE zero, pixel:%d'%i)
@@ -231,9 +231,9 @@ df['trap decay'] = trap_decay
 
 #record fit parameters and chi2
 df['ecap'] = ecap_list
-df['chi2_e'] = chi_2_ecap
+df['chi2_e'] = chi2_ecap
 df['xray'] = xray_list
-df['chi2_x'] = chi_2_xray
+df['chi2_x'] = chi2_xray
 
 #record number gaussians - should be 3 for CE and 5 for xray for pixels with good counts
 df['CE'] = CEfit
