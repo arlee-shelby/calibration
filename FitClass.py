@@ -61,7 +61,7 @@ class SnCalibration:
 		y = np.zeros(x.shape)
 
 		if self.capture == 'zero':
-			return self.line1(x,pars[:1])
+			return self.line1(x,pars[:2])
 
 		if self.capture !='OFF':
 			extrap_reg = np.logical_and(x>reg[0],x<reg[1])
