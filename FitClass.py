@@ -56,7 +56,7 @@ class SnCalibration:
 		return pars[0] + pars[1]*x +pars[2]*x**2
 
 	#define background funtion, dependent on CE or xray fit
-	def get_bckgrd(self,x,reg,pars):
+	def get_bckgrd(self,x,pars,reg=None):
 
 		y = np.zeros(x.shape)
 
@@ -77,38 +77,37 @@ class SnCalibration:
 	def get_fit(self,x,*pars):
 		#define various kinds of CE gaussian fits, based on number of gaussians used in the fit, this also determines the background fit range/location
 		reg = {}
-
 		if self.capture =='three':
 			reg[0] = pars[1]-pars[2]
 			reg[1] = (pars[4]*self.CEpeak)+pars[5]
-			return self.gaussian(x,pars[0:3]) + self.double_gaus(x,pars[3:6]) + pars[-4] + self.get_bckgrd(x,reg,pars[-3:])
+			return self.gaussian(x,pars[0:3]) + self.double_gaus(x,pars[3:6]) + pars[-4] + self.get_bckgrd(x,pars[-3:],reg)
 
 		if self.capture =='two':
-			self.reg[0] = pars[1]-pars[2]
-			self.reg[1] =pars[4]+pars[5]
-			return self.gaussian(x,pars[0:3]) + self.gaussian(x,pars[3:6]) + pars[-4] + self.get_bckgrd(x,reg,pars[-3:])
+			reg[0] = pars[1]-pars[2]
+			reg[1] =pars[4]+pars[5]
+			return self.gaussian(x,pars[0:3]) + self.gaussian(x,pars[3:6]) + pars[-4] + self.get_bckgrd(x,pars[-3:],reg)
 
 		if self.capture =='one':
-			self.reg[0] = pars[1]-pars[2]
-			self.reg[1] =pars[1]+pars[2]
-			return self.gaussian(x,pars[0:3]) + pars[-4] + self.get_bckgrd(x,reg,pars[-3:])
+			reg[0] = pars[1]-pars[2]
+			reg[1] =pars[1]+pars[2]
+			return self.gaussian(x,pars[0:3]) + pars[-4] + self.get_bckgrd(x,pars[-3:],reg)
 
 		if self.capture =='zero':
-			return 0.0 + self.get_bckgrd(x,reg,pars[-3:])
+			return 0.0 + self.get_bckgrd(x,pars[-3:])
 
 
 		#define xray gaussian fits, based on height of amplitudes of the various peaks seen
 		if self.xray=='five':
-			return self.threshold(x,pars[0:3]) + self.gaussian(x,pars[3:6]) + self.gaussian(x,pars[6:9]) + self.double_gaus(x,pars[9:12]) + pars[-4] + self.get_bckgrd(x,reg,pars[-3:])
+			return self.threshold(x,pars[0:3]) + self.gaussian(x,pars[3:6]) + self.gaussian(x,pars[6:9]) + self.double_gaus(x,pars[9:12]) + pars[-4] + self.get_bckgrd(x,pars[-3:])
 
 		if self.xray=='four':
-			return self.threshold(x,pars[0:3]) + self.gaussian(x,pars[3:6]) + self.double_gaus(x,pars[6:9]) + pars[-4] + self.get_bckgrd(x,reg,pars[-3:])
+			return self.threshold(x,pars[0:3]) + self.gaussian(x,pars[3:6]) + self.double_gaus(x,pars[6:9]) + pars[-4] + self.get_bckgrd(x,pars[-3:])
 
 		if self.xray=='three':
-			return self.threshold(x,pars[0:3]) + self.double_gaus(x,pars[3:6]) + pars[-4] + self.get_bckgrd(x,reg,pars[-3:])
+			return self.threshold(x,pars[0:3]) + self.double_gaus(x,pars[3:6]) + pars[-4] + self.get_bckgrd(x,pars[-3:])
 
 		if self.xray=='zero':
-			return self.threshold(x,pars[0:3]) + self.gaussian(x,pars[3:6]) + pars[-4] + self.get_bckgrd(x,reg,pars[-3:])
+			return self.threshold(x,pars[0:3]) + self.gaussian(x,pars[3:6]) + pars[-4] + self.get_bckgrd(x,pars[-3:])
 
 
 	#do fit

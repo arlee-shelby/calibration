@@ -114,7 +114,7 @@ for i in pixel_list:
 	thresh_peak, thresh_start = Funcs.get_peak(results,Sn.X1[0],Sn.X1[1])
 
 	#determine general peak amplitudes and locations for two peaks seen between threshold and xray peaks
-	peak1,center1 = Funcs.get_peak(results,thresh_start+4,thresh_start+6)
+	peak1,center1 = Funcs.get_peak(results,thresh_start+5,thresh_start+7)
 	peak2, center2 = Funcs.get_peak(results,20,28)
 
 	#determine xray peak amplidude and location guess
@@ -138,13 +138,13 @@ for i in pixel_list:
 			print('CE two, pixel:%d'%i)
 			pars = [CEpeak1, CEcenter1, 3, CEpeak2, CEcenter2, 3, 1, 2, 1e-8, 1]
 
-		if CEcounts<3:
+		if CEpeak2<3 and CEpeak2>1:
 			conf['capture'] = 'one'
 			CEfit.append(1)
 			print('CE one, pixel:%d'%i)
 			pars = [CEpeak1, CEcenter1, 3, 1, 2, 1e-8, 1]
 
-		if CEcounts<=1:
+		if CEpeak2<=1:
 			conf['capture'] = 'zero'
 			CEfit.append(0)
 			print('CE zero, pixel:%d'%i)
