@@ -1,6 +1,5 @@
 import numpy as np
 from config import conf
-# import FitFuncs
 from scipy.optimize import curve_fit
 
 #define Sn source class
@@ -26,9 +25,6 @@ class SnCalibration:
 		#define xray fit range and double gaussian range
 		self.X1 = [0.0,200.0]
 		self.X2 = [27.0,50.0]
-
-		#define reg to be modified for CE background fitting
-		self.reg = {}
 
 	#threshold gaussian
 	def threshold(self,x,pars):
@@ -59,76 +55,71 @@ class SnCalibration:
 	def poly(self,x,pars):
 		return pars[0] + pars[1]*x +pars[2]*x**2
 
-	#define multiple gaussian function
-	def get_gaus(self,x,pars):
-
-		#define various kinds of CE gaussian fits, based on number of gaussians used in the fit, this also determines the background fit range/location
-		if self.capture =='three':
-
-			self.reg[0] =pars[1]-pars[2]
-			self.reg[1] =(pars[4]*self.CEpeak)+pars[5]
-			return self.gaussian(x,pars[0:3]) + self.double_gaus(x,pars[3:6]) + pars[-1]
-
-		if self.capture =='two':
-
-			self.reg[0] = pars[1]-pars[2]
-			self.reg[1] =pars[4]+pars[5]
-			return self.gaussian(x,pars[0:3]) + self.gaussian(x,pars[3:6]) + pars[-1]
-
-		if self.capture =='one':
-
-			self.reg[0] = pars[1]-pars[2]
-			self.reg[1] =pars[1]+pars[2]
-			return self.gaussian(x,pars[0:3]) + pars[-1]
-
-		if self.capture =='zero':
-			return 0.0
-
-		#define xray gaussian fits, based on height of amplitudes of the various peaks seen
-		if self.xray=='five':
-			return self.threshold(x,pars[0:3]) + self.gaussian(x,pars[3:6]) + self.gaussian(x,pars[6:9]) + self.double_gaus(x,pars[9:12]) + pars[-1]
-
-		if self.xray=='four':
-			return self.threshold(x,pars[0:3]) + self.gaussian(x,pars[3:6]) + self.double_gaus(x,pars[6:9]) + pars[-1]
-
-		if self.xray=='three':
-			return self.threshold(x,pars[0:3]) + self.double_gaus(x,pars[3:6]) + pars[-1]
-
-		if self.xray=='zero':
-			return self.threshold(x,pars[0:3]) + self.gaussian(x,pars[3:6]) + pars[-1]
-
 	#define background funtion, dependent on CE or xray fit
-	def get_bckgrd(self,x,pars):
+	def get_bckgrd(self,x,reg,pars):
 
-		y =np.zeros(x.shape)
+		y = np.zeros(x.shape)
 
 		if self.capture == 'zero':
-			return self.line1(x,pars)
+			return self.line1(x,pars[:1])
 
-		elif self.capture !=' OFF': 
-			extrap_reg = np.logical_and(x>self.reg[0],x<self.reg[1])
-
-			y[extrap_reg] = (self.line2(x[extrap_reg],pars)-self.line1(x[extrap_reg],pars))/len(extrap_reg)
-			y[x<self.reg[0]] = self.line1(x[x<self.reg[0]],pars)
-			y[x>self.reg[1]] = self.line2(x[x>self.reg[1]],pars)
+		if self.capture !='OFF':
+			extrap_reg = np.logical_and(x>reg[0],x<reg[1])
+			y[extrap_reg] = (self.line2(x[extrap_reg],pars[1:])-self.line1(x[extrap_reg],pars[:2]))/len(extrap_reg)
+			y[x<reg[0]] = self.line1(x[x<reg[0]],pars[:2])
+			y[x>reg[1]] = self.line2(x[x>reg[1]],pars[1:])
 			return y
 
 		elif self.capture == 'OFF':
 			return self.poly(x,pars)
 
-	#get full fit, both gaussian and background
+	#define multiple gaussian function
 	def get_fit(self,x,*pars):
-		return self.get_gaus(x,pars[0:-3]) + self.get_bckgrd(x,pars[-3:])
+		#define various kinds of CE gaussian fits, based on number of gaussians used in the fit, this also determines the background fit range/location
+		reg = {}
+
+		if self.capture =='three':
+			reg[0] = pars[1]-pars[2]
+			reg[1] = (pars[4]*self.CEpeak)+pars[5]
+			return self.gaussian(x,pars[0:3]) + self.double_gaus(x,pars[3:6]) + pars[-4] + self.get_bckgrd(x,reg,pars[-3:])
+
+		if self.capture =='two':
+			self.reg[0] = pars[1]-pars[2]
+			self.reg[1] =pars[4]+pars[5]
+			return self.gaussian(x,pars[0:3]) + self.gaussian(x,pars[3:6]) + pars[-4] + self.get_bckgrd(x,reg,pars[-3:])
+
+		if self.capture =='one':
+			self.reg[0] = pars[1]-pars[2]
+			self.reg[1] =pars[1]+pars[2]
+			return self.gaussian(x,pars[0:3]) + pars[-4] + self.get_bckgrd(x,reg,pars[-3:])
+
+		if self.capture =='zero':
+			return 0.0 + self.get_bckgrd(x,reg,pars[-3:])
+
+
+		#define xray gaussian fits, based on height of amplitudes of the various peaks seen
+		if self.xray=='five':
+			return self.threshold(x,pars[0:3]) + self.gaussian(x,pars[3:6]) + self.gaussian(x,pars[6:9]) + self.double_gaus(x,pars[9:12]) + pars[-4] + self.get_bckgrd(x,reg,pars[-3:])
+
+		if self.xray=='four':
+			return self.threshold(x,pars[0:3]) + self.gaussian(x,pars[3:6]) + self.double_gaus(x,pars[6:9]) + pars[-4] + self.get_bckgrd(x,reg,pars[-3:])
+
+		if self.xray=='three':
+			return self.threshold(x,pars[0:3]) + self.double_gaus(x,pars[3:6]) + pars[-4] + self.get_bckgrd(x,reg,pars[-3:])
+
+		if self.xray=='zero':
+			return self.threshold(x,pars[0:3]) + self.gaussian(x,pars[3:6]) + pars[-4] + self.get_bckgrd(x,reg,pars[-3:])
+
 
 	#do fit
-	def fitter(self,results,pars,bins):
-
+	def fitter(self,results,bins,pars):
 		histogram, bin_edges = np.histogram(results.data()['energy'], bins = bins)
+
 		width = bin_edges[1]-bin_edges[0]
 
 		parameters, errors = curve_fit(self.get_fit, bin_edges[:-1]+width/2, histogram, p0 = pars)
 
-		chi2 = sum((histogram-self.get_fit(bin_edges[:-1]+width/2,parameters))**2)/(len(bin_edges[:-1]+width/2)-len(parameters))
+		chi2 = sum((histogram-self.get_fit(bin_edges[:-1]+width/2,*parameters))**2)/(len(bin_edges[:-1]+width/2)-len(parameters))
 
 		return histogram, parameters, chi2, errors
 

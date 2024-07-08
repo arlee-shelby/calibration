@@ -82,6 +82,9 @@ trap_rise = []
 trap_length = []
 trap_decay = []
 
+CEfit = []
+Xfit = []
+
 for i in pixel_list:
 	#record run number and trap filter parameters
 	run_list.append(run_number)
@@ -91,6 +94,7 @@ for i in pixel_list:
 
 	#get results
 	results = Funcs.results(run, i, int(rise), int(length), int(decay))
+	prtin('got results')
 
 	#generic initialization of fit class
 	conf['capture'] = ''
@@ -123,20 +127,27 @@ for i in pixel_list:
 		conf['xray'] = 'OFF'
 		bins = np.arange(SN.CE1[0],SN.CE2[1])
 
-		if CEcounts>100:
+		if CEpeak2>5:
 			conf['capture'] = 'three'
+			CEfit.append(3)
 			pars = [CEpeak1, CEcenter1, 3, CEpeak2, CEcenter2, 3, 1, 2, 1e-8, 1]
 
-		if CEcounts<25:
+		if CEpeak2<5 and CEpeak2>3:
 			conf['capture'] = 'two'
+			CEfit.append(2)
+			print('CE two, pixel:%d'%i)
 			pars = [CEpeak1, CEcenter1, 3, CEpeak2, CEcenter2, 3, 1, 2, 1e-8, 1]
 
-		if CEcounts<10:
+		if CEcounts<3:
 			conf['capture'] = 'one'
+			CEfit.append(1)
+			print('CE one, pixel:%d'%i)
 			pars = [CEpeak1, CEcenter1, 3, 1, 2, 1e-8, 1]
 
-		if CEcounts<4:
+		if CEcounts<1:
 			conf['capture'] = 'zero'
+			CEfit.append(0)
+			print('CE zero, pixel:%d'%i)
 			pars = [2, 1e-8, 1]
 
 		Sn  = SnCalibration()
@@ -149,31 +160,39 @@ for i in pixel_list:
 
 
 	histogram, parameters, chi2, errors = CEevaluate(Sn, conf, CEpeak1, CEcenter1, CEpeak2, CEcenter2, i)
+	print(chi2)
 
 	#record fit results and histogram
 	CEspectrum.append(histogram)
-	ecap_list.append(parameters.tolist())
+	ecap_list.append(parameters)
 	chi2_ecap.append(chi2)
 
 	#Do same thing for the xray peaks, initialization based on amplitudes of peaks rather than counts
 	def Xevaluate(SN, conf, thresh_start, thresh_peak, peak1, center1, peak2, center2, Xpeak, Xcenter, i):
 		conf['capture'] = 'OFF'
-		bins = np.arange(thresh_start,SN.X2[1])
+		bins = np.arange(thresh_start,SN.X1[1])
 
 		if peak2>60 and Xpeak>60:
 			conf['xray'] = 'five'
+			Xfit.append(5)
 			pars = [thresh_peak+400, 0, thresh_start, peak1, center1, 3, peak2, center2, 4, Xpeak, Xcenter, 5, 10, 1, 3, 5]
 
 		if peak2<60 and Xpeak>60:
 			conf['xray'] = 'four'
+			Xfit.append(4)
+			print('X four, pixel:%d'%i)
 			pars = [thresh_peak+400, 0, thresh_start, peak1, center1, 3, Xpeak, Xcenter, 5, 10, 1, 3, 5]
 
 		if peak2>60 and Xpeak<60:
 			conf['xray'] = 'three'
+			Xfit.append(3)
+			print('X three, pixel:%d'%i)
 			pars = [thresh_peak+400, 0, thresh_start, peak1, center1, 3, peak2, center2, 4, 10, 1, 3, 5]
 
 		if peak2<60 and Xpeak<60:
 			conf['xray'] = 'zero'
+			Xfit.append(0)
+			print('X zero, pixel:%d'%i)
 			pars = [thresh_peak+400, 0, thresh_start, peak1, center1, 3, 10, 1, 3, 5]
 
 		Sn  = SnCalibration()
@@ -186,9 +205,10 @@ for i in pixel_list:
 
 
 	histogram, parameters, chi2, errors = Xevaluate(Sn, conf, thresh_start, thresh_peak, peak1, center1, peak2, center2, Xpeak, Xcenter, i)
+	print(chi2)
 
 	Xspectrum.append(histogram)
-	xray_list.append(parameters.tolist())
+	xray_list.append(parameters)
 	chi2_xray.append(chi2)
 
 #construct pandas DataFrame to store data to csv file
@@ -204,14 +224,22 @@ for i in range(10,15):
 	val = np.array(slow_df[slow_df.columns[i]][slow_df['RunID']==run_number])[0]
 	df[slow_df.columns[i]] = [val]*len(pixel_list)
 
+#record trap filter parameters
 df['trap rise'] = trap_rise
 df['trap length'] = trap_length
 df['trap decay'] = trap_decay
 
+#record fit parameters and chi2
 df['ecap'] = ecap_list
 df['chi2_e'] = chi_2_ecap
 df['xray'] = xray_list
 df['chi2_x'] = chi_2_xray
+
+#record number gaussians - should be 3 for CE and 5 for xray for pixels with good counts
+df['CE'] = CEfit
+df['Xray'] = Xfit
+
+#record histogram data for later analysis
 df['CE hist'] = CEspectrum
 df['Xray hist'] = Xspectrum
 
