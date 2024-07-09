@@ -183,7 +183,7 @@ for i in pixel_list:
 			conf['xray'] = 'four'
 			Xfit.append(4)
 			print('X four, pixel:%d'%i)
-			pars = [thresh_peak+400, 0, thresh_start, peak1, center1, 3, Xpeak, Xcenter, 5, 10, 1, 3, 5]
+			pars = [thresh_peak+400, 0, thresh_start, peak1, center1, 4, Xpeak, Xcenter, 5, 10, 1, 3, 5]
 
 		if peak2>=10 and Xpeak<=10:
 			conf['xray'] = 'three'
