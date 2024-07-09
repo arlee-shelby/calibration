@@ -136,7 +136,7 @@ for i in pixel_list:
 			conf['capture'] = 'two'
 			CEfit.append(2)
 			print('CE two, pixel:%d'%i)
-			pars = [CEpeak1, CEcenter1, 3, CEpeak2, CEcenter2, 8, 1, 2, 1e-8, 1]
+			pars = [CEpeak1, CEcenter1, 3, CEpeak2, CEcenter2, 6, 1, 2, 1e-8, 1]
 
 		if CEpeak2<3 and CEpeak2>1:
 			conf['capture'] = 'one'
