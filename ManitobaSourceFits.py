@@ -11,6 +11,8 @@ import pandas as pd
 from FitClass import SnCalibration
 from config import conf
 
+np.set_printoptions(threshold=sys.maxsize)
+
 warnings.simplefilter('ignore')
 
 #define functionality that can change during implementation
