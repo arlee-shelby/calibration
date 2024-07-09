@@ -40,6 +40,7 @@ class SnCalibration:
 		if self.xray=='OFF':
 			amp = self.CEamp
 			peak = self.CEpeak
+
 		if self.capture=='OFF':
 			amp = self.Xamp
 			peak = self.Xpeak
