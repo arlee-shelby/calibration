@@ -15,7 +15,7 @@ class SnCalibration:
 		self.CEpeak = 390.872/387.461
 
 		#define histogram range and double gaussian range
-		self.CE1 = [500.0,700.0]
+		self.CE1 = [300.0,1400.0]
 		self.CE2 = [622.0,700.0]
 
 		#define intensity and energy ratios for xray fit
