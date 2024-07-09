@@ -22,7 +22,7 @@ parser.add_argument('-d', '--data', default='/home', help='Path to data director
 parser.add_argument('-r', '--run', default=1374,type=int, help='Run number')
 parser.add_argument('-p', '--pixels', default='None', help='pixels to analyze')
 parser.add_argument('-o', '--output', default='output', help='Output file name')
-parser.add_argument('-c','--config',default='None',help='Input configuration file')
+parser.add_argument('-c','--config',default='None',help='Input configuration file path')
 
 args = vars(parser.parse_args())
 
@@ -183,7 +183,7 @@ for i in pixel_list:
 			conf['xray'] = 'four'
 			Xfit.append(4)
 			print('X four, pixel:%d'%i)
-			pars = [thresh_peak+400, 0, thresh_start, peak1, center1, 4, Xpeak, Xcenter, 5, 10, 1, 3, 5]
+			pars = [thresh_peak+400, 0, thresh_start+1, peak1, center1, 4, Xpeak, Xcenter, 5, 10, 1, 3, 5]
 
 		if peak2>=10 and Xpeak<=10:
 			conf['xray'] = 'three'
