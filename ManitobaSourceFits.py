@@ -125,7 +125,7 @@ for i in pixel_list:
 	#raise flag if it fails
 	def CEevaluate(SN, conf, CEpeak1,CEcenter1,CEpeak2, CEcenter2,i):
 		conf['xray'] = 'OFF'
-		bins = np.arange(SN.CE1[0],SN.CE2[1])
+		bins = np.arange(SN.CE1[0],SN.CE1[1])
 
 		if CEpeak2>=5:
 			conf['capture'] = 'three'
