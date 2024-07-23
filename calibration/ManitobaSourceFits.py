@@ -129,28 +129,31 @@ for i in pixel_list:
 		conf['xray'] = 'OFF'
 		bins = np.arange(SN.CE1[0],SN.CE1[1])
 
-		if CEpeak2>=5:
+		if CEpeak2>=7:
 			conf['capture'] = 'three'
 			CEfit.append(3)
-			pars = [CEpeak1, CEcenter1, 3, CEpeak2, CEcenter2, 3, 1, 2, 1e-8, 1]
+			pars = [CEpeak1, CEcenter1, 5, CEpeak2, CEcenter2, 5, 1, 2, 1e-8, 1]
 
-		if CEpeak2<5 and CEpeak2>=3:
+		elif CEpeak2>=6:
 			conf['capture'] = 'two'
 			CEfit.append(2)
 			print('CE two, pixel:%d'%i)
-			pars = [CEpeak1, CEcenter1, 3, CEpeak2, CEcenter2, 6, 1, 2, 1e-8, 1]
+			pars = [CEpeak1, CEcenter1, 5, CEpeak2, CEcenter2, 5, 1, 2, 1e-8, 1]
 
-		if CEpeak2<3 and CEpeak2>1:
+		elif CEpeak2<=5 and CEpeak1>CEpeak2:
 			conf['capture'] = 'one'
 			CEfit.append(1)
 			print('CE one, pixel:%d'%i)
-			pars = [CEpeak1, CEcenter1, 3, 1, 2, 1e-8, 1]
+			pars = [CEpeak1, CEcenter1, 4, 1, 2, 1e-8, 1]
 
-		if CEpeak2<=1:
+		else:
 			conf['capture'] = 'zero'
 			CEfit.append(0)
-			print('CE zero, pixel:%d'%i)
+			print('CE zero, pixel:%d'%i)     
 			pars = [2, 1e-8, 1]
+            
+
+		print(CEpeak1,CEpeak2)      
 
 		Sn  = SnCalibration()
 		try:
@@ -179,19 +182,19 @@ for i in pixel_list:
 			Xfit.append(5)
 			pars = [thresh_peak+400, 0, thresh_start, peak1, center1, 3, peak2, center2, 4, Xpeak, Xcenter, 5, 10, 1, 3, 5]
 
-		if peak2<10 and Xpeak>10:
+		elif peak2<=10 and Xpeak>10:
 			conf['xray'] = 'four'
 			Xfit.append(4)
 			print('X four, pixel:%d'%i)
 			pars = [thresh_peak+400, 0, thresh_start+1, peak1, center1, 4, Xpeak, Xcenter, 5, 10, 1, 3, 5]
 
-		if peak2>=10 and Xpeak<=10:
+		elif peak2>10 and Xpeak<=10:
 			conf['xray'] = 'three'
 			Xfit.append(3)
 			print('X three, pixel:%d'%i)
 			pars = [thresh_peak+400, 0, thresh_start, peak1, center1, 3, peak2, center2, 4, 10, 1, 3, 5]
 
-		if peak2<=10 and Xpeak<=10:
+		elif peak2<=10 and Xpeak<=10:
 			conf['xray'] = 'zero'
 			Xfit.append(0)
 			print('X zero, pixel:%d'%i)
