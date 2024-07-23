@@ -99,125 +99,6 @@ for i in pixel_list:
 	results = Funcs.results(run, i, int(rise), int(length), int(decay))
 	print('got results')
 
-<<<<<<< HEAD
-	#generic initialization of fit class
-	conf['capture'] = ''
-	conf['xray'] = ''
-	Sn = SnCalibration()
-
-	#determine counts in CE and X-ray regions
-	CEcounts = Funcs.get_counts(results,Sn.CE1[0], Sn.CE1[1])
-	Xcounts = Funcs.get_counts(results,Sn.X1[0], Sn.X1[1])
-
-	#determine general peak amplitudes and locations for guesses for the fit
-	##1 guesses 363keV CE peak, #2 guesses 387keV CE peak
-	CEpeak1, CEcenter1 = Funcs.get_peak(results,Sn.CE1[0],Sn.CE1[1])
-	CEpeak2, CEcenter2 = Funcs.get_peak(results,Sn.CE2[0],Sn.CE2[1])
-
-	#threshold for low energy spectrum is cut off, need to determine location of start of histogram such that the threshold centered around zero is fit properly
-	thresh_peak, thresh_start = Funcs.get_peak(results,Sn.X1[0],Sn.X1[1])
-
-	#determine general peak amplitudes and locations for two peaks seen between threshold and xray peaks
-	peak1,center1 = Funcs.get_peak(results,thresh_start+5,thresh_start+7)
-	peak2, center2 = Funcs.get_peak(results,20,28)
-
-	#determine xray peak amplidude and location guess
-	Xpeak, Xcenter = Funcs.get_peak(results,Sn.X2[0],Sn.X2[1])
-
-	#define function to evaluate fit, need to initialize the SnCalibration class with conf['capture'] and conf['xray']
-	#also define the parameters used for the CE peak fits based on counts in the histograms
-	#raise flag if it fails
-	def CEevaluate(SN, conf, CEpeak1,CEcenter1,CEpeak2, CEcenter2,i):
-		conf['xray'] = 'OFF'
-		bins = np.arange(SN.CE1[0],SN.CE1[1])
-
-		if CEpeak2>=7:
-			conf['capture'] = 'three'
-			CEfit.append(3)
-			pars = [CEpeak1, CEcenter1, 5, CEpeak2, CEcenter2, 5, 1, 2, 1e-8, 1]
-
-		elif CEpeak2>=6:
-			conf['capture'] = 'two'
-			CEfit.append(2)
-			print('CE two, pixel:%d'%i)
-			pars = [CEpeak1, CEcenter1, 5, CEpeak2, CEcenter2, 5, 1, 2, 1e-8, 1]
-
-		elif CEpeak2<=5 and CEpeak1>CEpeak2:
-			conf['capture'] = 'one'
-			CEfit.append(1)
-			print('CE one, pixel:%d'%i)
-			pars = [CEpeak1, CEcenter1, 4, 1, 2, 1e-8, 1]
-
-		else:
-			conf['capture'] = 'zero'
-			CEfit.append(0)
-			print('CE zero, pixel:%d'%i)     
-			pars = [2, 1e-8, 1]
-            
-
-		print(CEpeak1,CEpeak2)      
-
-		Sn  = SnCalibration()
-		try:
-			return Sn.fitter(results,bins,pars)
-
-		except Exception as e:
-			print(e,i,'failed upper fits')
-			return 0,0,0,0
-
-
-	histogram, parameters, chi2, errors = CEevaluate(Sn, conf, CEpeak1, CEcenter1, CEpeak2, CEcenter2, i)
-	print(chi2)
-
-	#record fit results and histogram
-	CEspectrum.append(histogram)
-	ecap_list.append(parameters)
-	chi2_ecap.append(chi2)
-
-	#Do same thing for the xray peaks, initialization based on amplitudes of peaks rather than counts
-	def Xevaluate(SN, conf, thresh_start, thresh_peak, peak1, center1, peak2, center2, Xpeak, Xcenter, i):
-		conf['capture'] = 'OFF'
-		bins = np.arange(thresh_start,SN.X1[1])
-
-		if peak2>10 and Xpeak>10:
-			conf['xray'] = 'five'
-			Xfit.append(5)
-			pars = [thresh_peak+400, 0, thresh_start, peak1, center1, 3, peak2, center2, 4, Xpeak, Xcenter, 5, 10, 1, 3, 5]
-
-		elif peak2<=10 and Xpeak>10:
-			conf['xray'] = 'four'
-			Xfit.append(4)
-			print('X four, pixel:%d'%i)
-			pars = [thresh_peak+400, 0, thresh_start+1, peak1, center1, 4, Xpeak, Xcenter, 5, 10, 1, 3, 5]
-
-		elif peak2>10 and Xpeak<=10:
-			conf['xray'] = 'three'
-			Xfit.append(3)
-			print('X three, pixel:%d'%i)
-			pars = [thresh_peak+400, 0, thresh_start, peak1, center1, 3, peak2, center2, 4, 10, 1, 3, 5]
-
-		elif peak2<=10 and Xpeak<=10:
-			conf['xray'] = 'zero'
-			Xfit.append(0)
-			print('X zero, pixel:%d'%i)
-			pars = [thresh_peak+400, 0, thresh_start, peak1, center1, 3, 10, 1, 3, 5]
-
-		Sn  = SnCalibration()
-		try:
-			return Sn.fitter(results,bins,pars)
-
-		except Exception as e:
-			print(e,i,'failed lower fits')
-			return 0,0,0,0
-
-
-	histogram, parameters, chi2, errors = Xevaluate(Sn, conf, thresh_start, thresh_peak, peak1, center1, peak2, center2, Xpeak, Xcenter, i)
-	print(chi2)
-
-	Xspectrum.append(histogram)
-	xray_list.append(parameters)
-	chi2_xray.append(chi2)
-=======
 	if SnBool=='True':
 		#generic initialization of fit class
 		conf['capture'] = ''
@@ -471,7 +352,6 @@ for i in pixel_list:
 		chi2_xray.append(chi2)
 
 
->>>>>>> 2f8403a77cc4493576f4b20c93601a39eddb81fc
 
 #construct pandas DataFrame to store data to csv file
 df['run'] = run_list
