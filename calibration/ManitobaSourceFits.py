@@ -9,6 +9,7 @@ import Funcs
 import csv
 import pandas as pd
 from FitClass import SnCalibration
+from FitClass import CdCalibration
 from config import conf
 
 np.set_printoptions(threshold=sys.maxsize)
@@ -63,7 +64,7 @@ import nabPy as Nab
 print(run_number)
 
 #get run
-run = Nab.DataRun(directory, run_number, ignoreEventFile = True)
+run = Nab.DataRun(directory, run_number, ignoreEventFile = True,subRunMin=0, subRunMax=2)
 print('got run')
 
 #set up datafame functionality for outputcsv file
@@ -98,120 +99,259 @@ for i in pixel_list:
 	results = Funcs.results(run, i, int(rise), int(length), int(decay))
 	print('got results')
 
-	#generic initialization of fit class
-	conf['capture'] = ''
-	conf['xray'] = ''
-	Sn = SnCalibration()
+	if SnBool=='True':
+		#generic initialization of fit class
+		conf['capture'] = ''
+		conf['xray'] = ''
+		Sn = SnCalibration()
 
-	#determine counts in CE and X-ray regions
-	CEcounts = Funcs.get_counts(results,Sn.CE1[0], Sn.CE1[1])
-	Xcounts = Funcs.get_counts(results,Sn.X1[0], Sn.X1[1])
+		#determine counts in CE and X-ray regions
+		CEcounts = Funcs.get_counts(results,Sn.CE1[0], Sn.CE1[1])
+		Xcounts = Funcs.get_counts(results,Sn.X1[0], Sn.X1[1])s
 
-	#determine general peak amplitudes and locations for guesses for the fit
-	##1 guesses 363keV CE peak, #2 guesses 387keV CE peak
-	CEpeak1, CEcenter1 = Funcs.get_peak(results,Sn.CE1[0],Sn.CE1[1])
-	CEpeak2, CEcenter2 = Funcs.get_peak(results,Sn.CE2[0],Sn.CE2[1])
+		#determine general peak amplitudes and locations for guesses for the fit
+		##1 guesses 363keV CE peak, #2 guesses 387keV CE peak
+		CEpeak1, CEcenter1 = Funcs.get_peak(results,Sn.CE1[0],Sn.CE1[1])
+		CEpeak2, CEcenter2 = Funcs.get_peak(results,Sn.CE2[0],Sn.CE2[1])
 
-	#threshold for low energy spectrum is cut off, need to determine location of start of histogram such that the threshold centered around zero is fit properly
-	thresh_peak, thresh_start = Funcs.get_peak(results,Sn.X1[0],Sn.X1[1])
+		#threshold for low energy spectrum is cut off, need to determine location of start of histogram such that the threshold centered around zero is fit properly
+		thresh_peak, thresh_start = Funcs.get_peak(results,Sn.X1[0],Sn.X1[1])
 
-	#determine general peak amplitudes and locations for two peaks seen between threshold and xray peaks
-	peak1,center1 = Funcs.get_peak(results,thresh_start+5,thresh_start+7)
-	peak2, center2 = Funcs.get_peak(results,20,28)
+		#determine general peak amplitudes and locations for two peaks seen between threshold and xray peaks
+		peak1,center1 = Funcs.get_peak(results,thresh_start+5,thresh_start+7)
+		peak2, center2 = Funcs.get_peak(results,20,28)
 
-	#determine xray peak amplidude and location guess
-	Xpeak, Xcenter = Funcs.get_peak(results,Sn.X2[0],Sn.X2[1])
+		#determine xray peak amplidude and location guess
+		Xpeak, Xcenter = Funcs.get_peak(results,Sn.X2[0],Sn.X2[1])
 
-	#define function to evaluate fit, need to initialize the SnCalibration class with conf['capture'] and conf['xray']
-	#also define the parameters used for the CE peak fits based on counts in the histograms
-	#raise flag if it fails
-	def CEevaluate(SN, conf, CEpeak1,CEcenter1,CEpeak2, CEcenter2,i):
-		conf['xray'] = 'OFF'
-		bins = np.arange(SN.CE1[0],SN.CE1[1])
+		#define function to evaluate fit, need to initialize the SnCalibration class with conf['capture'] and conf['xray']
+		#also define the parameters used for the CE peak fits based on counts in the histograms
+		#raise flag if it fails
+		def CEevaluate(SN, conf, CEpeak1,CEcenter1,CEpeak2, CEcenter2,i):
+			conf['xray'] = 'OFF'
+			bins = np.arange(SN.CE1[0],SN.CE1[1])
 
-		if CEpeak2>=5:
-			conf['capture'] = 'three'
-			CEfit.append(3)
-			pars = [CEpeak1, CEcenter1, 3, CEpeak2, CEcenter2, 3, 1, 2, 1e-8, 1]
+			if CEpeak2>=7:
+				conf['capture'] = 'three'
+				CEfit.append(3)
+				pars = [CEpeak1, CEcenter1, 5, CEpeak2, CEcenter2, 5, 1, 2, 1e-8, 1]
 
-		if CEpeak2<5 and CEpeak2>=3:
-			conf['capture'] = 'two'
-			CEfit.append(2)
-			print('CE two, pixel:%d'%i)
-			pars = [CEpeak1, CEcenter1, 3, CEpeak2, CEcenter2, 6, 1, 2, 1e-8, 1]
+			elif CEpeak2>=6:
+				conf['capture'] = 'two'
+				CEfit.append(2)
+				print('CE two, pixel:%d'%i)
+				pars = [CEpeak1, CEcenter1, 5, CEpeak2, CEcenter2, 5, 1, 2, 1e-8, 1]
 
-		if CEpeak2<3 and CEpeak2>1:
-			conf['capture'] = 'one'
-			CEfit.append(1)
-			print('CE one, pixel:%d'%i)
-			pars = [CEpeak1, CEcenter1, 3, 1, 2, 1e-8, 1]
+			elif CEpeak2<=5 and CEpeak1>CEpeak2:
+				conf['capture'] = 'one'
+				CEfit.append(1)
+				print('CE one, pixel:%d'%i)
+				pars = [CEpeak1, CEcenter1, 5, 1, 2, 1e-8, 1]
 
-		if CEpeak2<=1:
-			conf['capture'] = 'zero'
-			CEfit.append(0)
-			print('CE zero, pixel:%d'%i)
-			pars = [2, 1e-8, 1]
+			else:
+				conf['capture'] = 'zero'
+				CEfit.append(0)
+				print('CE zero, not enought counts pixel:%d'%i)
+				pars = [2, 1e-8, 1]
+				
 
-		Sn  = SnCalibration()
-		try:
-			return Sn.fitter(results,bins,pars)
+			Sn  = SnCalibration()
+			try:
+				return Sn.fitter(results,bins,pars)
 
-		except Exception as e:
-			print(e,i,'failed upper fits')
-			return 0,0,0,0
-
-
-	histogram, parameters, chi2, errors = CEevaluate(Sn, conf, CEpeak1, CEcenter1, CEpeak2, CEcenter2, i)
-	print(chi2)
-
-	#record fit results and histogram
-	CEspectrum.append(histogram)
-	ecap_list.append(parameters)
-	chi2_ecap.append(chi2)
-
-	#Do same thing for the xray peaks, initialization based on amplitudes of peaks rather than counts
-	def Xevaluate(SN, conf, thresh_start, thresh_peak, peak1, center1, peak2, center2, Xpeak, Xcenter, i):
-		conf['capture'] = 'OFF'
-		bins = np.arange(thresh_start,SN.X1[1])
-
-		if peak2>10 and Xpeak>10:
-			conf['xray'] = 'five'
-			Xfit.append(5)
-			pars = [thresh_peak+400, 0, thresh_start, peak1, center1, 3, peak2, center2, 4, Xpeak, Xcenter, 5, 10, 1, 3, 5]
-
-		if peak2<10 and Xpeak>10:
-			conf['xray'] = 'four'
-			Xfit.append(4)
-			print('X four, pixel:%d'%i)
-			pars = [thresh_peak+400, 0, thresh_start+1, peak1, center1, 4, Xpeak, Xcenter, 5, 10, 1, 3, 5]
-
-		if peak2>=10 and Xpeak<=10:
-			conf['xray'] = 'three'
-			Xfit.append(3)
-			print('X three, pixel:%d'%i)
-			pars = [thresh_peak+400, 0, thresh_start, peak1, center1, 3, peak2, center2, 4, 10, 1, 3, 5]
-
-		if peak2<=10 and Xpeak<=10:
-			conf['xray'] = 'zero'
-			Xfit.append(0)
-			print('X zero, pixel:%d'%i)
-			pars = [thresh_peak+400, 0, thresh_start, peak1, center1, 3, 10, 1, 3, 5]
-
-		Sn  = SnCalibration()
-		try:
-			return Sn.fitter(results,bins,pars)
-
-		except Exception as e:
-			print(e,i,'failed lower fits')
-			return 0,0,0,0
+			except Exception as e:
+				print(e,i,'failed upper fits')
+				return 0,0,0,0
 
 
-	histogram, parameters, chi2, errors = Xevaluate(Sn, conf, thresh_start, thresh_peak, peak1, center1, peak2, center2, Xpeak, Xcenter, i)
-	print(chi2)
+		histogram, parameters, chi2, errors = CEevaluate(Sn, conf, CEpeak1, CEcenter1, CEpeak2, CEcenter2, i)
+		print(chi2)
 
-	Xspectrum.append(histogram)
-	xray_list.append(parameters)
-	chi2_xray.append(chi2)
+		#record fit results and histogram
+		CEspectrum.append(histogram)
+		ecap_list.append(parameters)
+		chi2_ecap.append(chi2)
+
+		#Do same thing for the xray peaks, initialization based on amplitudes of peaks rather than counts
+		def Xevaluate(SN, conf, thresh_start, thresh_peak, peak1, center1, peak2, center2, Xpeak, Xcenter, i):
+			conf['capture'] = 'OFF'
+			bins = np.arange(thresh_start,SN.X1[1])
+
+			if peak2>10 and Xpeak>10:
+				conf['xray'] = 'five'
+				Xfit.append(5)
+				pars = [thresh_peak+400, 0, thresh_start, peak1, center1, 3, peak2, center2, 4, Xpeak, Xcenter, 5, 10, 1, 3, 5]
+
+			elif peak2<10 and Xpeak>10:
+				conf['xray'] = 'four'
+				Xfit.append(4)
+				print('X four, pixel:%d'%i)
+				pars = [thresh_peak+400, 0, thresh_start+1, peak1, center1, 4, Xpeak, Xcenter, 5, 10, 1, 3, 5]
+
+			elif peak2>=10 and Xpeak<=10:
+				conf['xray'] = 'three'
+				Xfit.append(3)
+				print('X three, pixel:%d'%i)
+				pars = [thresh_peak+400, 0, thresh_start, peak1, center1, 3, peak2, center2, 4, 10, 1, 3, 5]
+
+			elif peak2<=10 and Xpeak<=10:
+				conf['xray'] = 'zero'
+				Xfit.append(0)
+				print('X zero, pixel:%d'%i)
+				pars = [thresh_peak+400, 0, thresh_start, peak1, center1, 3, 10, 1, 3, 5]
+
+			Sn  = SnCalibration()
+			try:
+				return Sn.fitter(results,bins,pars)
+
+			except Exception as e:
+				print(e,i,'failed lower fits')
+				return 0,0,0,0
+
+
+		histogram, parameters, chi2, errors = Xevaluate(Sn, conf, thresh_start, thresh_peak, peak1, center1, peak2, center2, Xpeak, Xcenter, i)
+		print(chi2)
+
+		Xspectrum.append(histogram)
+		xray_list.append(parameters)
+		chi2_xray.append(chi2)
+
+	if CdBool=='True':
+		conf['capture1'] = ''
+		conf['capture2'] = ''
+		conf['xray'] = ''
+		Cd = CdCalibration()
+
+		#determine general peak amplitudes and locations for guesses for the fit
+		CEpeak1, CEcenter1 = Funcs.get_peak(results,Cd.CE1[0],Cd.CE1[1])
+		CEpeak2, CEcenter2 = Funcs.get_peak(results,Cd.CE2[0],Cd.CE2[1])
+
+		#threshold for low energy spectrum is cut off, need to determine location of start of histogram such that the threshold centered around zero is fit properly
+		thresh_peak, thresh_start = Funcs.get_peak(results,Cd.X1[0],Cd.X1[1])
+
+		# #determine general peak amplitudes and locations for two peaks seen between threshold and xray peaks
+		# peak1,center1 = Funcs.get_peak(results,thresh_start+5,thresh_start+7)
+		# peak2, center2 = Funcs.get_peak(results,20,28)
+
+		#determine xray peak amplidude and location guess
+		Xpeak, Xcenter = Funcs.get_peak(results,Cd.X2[0],Cd.X2[1])
+
+		CEfit_list = []
+
+		def CEevaluate1(CD, conf, CEpeak1,CEcenter1,i):
+			conf['xray'] = 'OFF'
+			conf['capture2']= 'OFF'
+
+			bins = np.arange(CD.CE1[0],CD.CE1[1])
+
+			if CEpeak1>5:
+				conf['capture1'] = 'ON'
+				CEfit_list.append(1)
+				print('CE peak1 good, pixel:%d'%i)
+				pars = [CEpeak1, CEcenter1, 5, 1, 2, 1e-8, 1]
+			else:
+				conf['capture1'] = 'zero'
+				CEfit_list.append(0)
+				print('CE peak1 bad, pixel:%d'%i)
+				pars = [2, 1e-8, 1]
+
+			Cd = CdCalibration()
+			try:
+				return Cd.fitter(results,bins,pars)
+
+			except Exception as e:
+				print(e,i,'failed CE peak 1')
+				return 0,0,0,0
+
+		histogram, parameters, chi2, errors = CEevaluate1(Cd, conf, CEpeak1, CEcenter1, i)
+		print(chi2)
+
+		#record fit results and histogram
+
+		CEspectrum.append(histogram)
+		ecap_list.append(parameters)
+		chi2_ecap.append(chi2)
+
+		def CEevaluate2(CD, conf, CEpeak2, CEcenter2,i):
+			conf['xray'] = 'OFF'
+			conf['capture1']= 'OFF'
+			bins = np.arange(CD.CE2[0],CD.CE2[1])
+
+			if CEpeak2>=7:
+				conf['capture2'] = 'two'
+				CEfit_list.append(2)
+				print('CE peak2 two, pixel:%d'%i)
+				pars = [CEpeak2, CEcenter2, 5, 1, 2, 1e-8, 1]
+
+			elif CEpeak2>=5:
+				conf['capture2'] = 'one'
+				CEfit_list.append(1)
+				print('CE peak2 one, pixel:%d'%i)
+				pars = [CEpeak2, CEcenter2, 5, 1, 2, 1e-8, 1]
+
+			else:
+				conf['capture2'] = 'zero'
+				CEfit_list.append(0)
+				print('CE peak2 zero, pixel:%d'%i)
+				pars = [2, 1e-8, 1]
+
+			Cd = CdCalibration()
+			try:
+				return Cd.fitter(results,bins,pars)
+
+			except Exception as e:
+				print(e,i,'failed CE peak 2')
+				return 0,0,0,0
+
+		histogram, parameters, chi2, errors = CEevaluate2(Cd, conf, CEpeak2, CEcenter2, i)
+		print(chi2)
+
+		#record fit results and histogram
+
+		CEspectrum.append(histogram)
+		ecap_list.append(parameters)
+		chi2_ecap.append(chi2)
+
+		CEfit.append(CEfit_list)
+
+		def Xevaluate(CD, conf, thresh_start, thresh_peak, Xpeak, Xcenter, i):
+			conf['capture1'] = 'OFF'
+			conf['capture2']= 'OFF'
+			bins = np.arange(thresh_start,CD.X1[1])
+			if Xpeak>=7:
+				conf['xray'] = 'three'
+				Xfit.append(3)
+				print('X three, pixel:%d'%i)
+				pars = [thresh_peak+400, 0, thresh_start+1, Xpeak, Xcenter, 4, 10, 1, 3, 5]
+
+			elif Xpeak>=5:
+				conf['xray'] = 'two'
+				Xfit.append(3)
+				print('X three, pixel:%d'%i)
+				pars = [thresh_peak+400, 0, thresh_start+1, Xpeak, Xcenter, 4, 10, 1, 3, 5]
+
+			else:
+				conf['xray'] = 'zero'
+				Xfit.append(0)
+				print('X zero, pixel:%d'%i)
+				pars = [thresh_peak+400, 0, thresh_start,10, 1, 3, 5]
+
+			Cd = CdCalibration()
+			try:
+				return Cd.fitter(results,bins,pars)
+
+			except Exception as e:
+				print(e,i,'failed X peak')
+				return 0,0,0,0
+
+		histogram, parameters, chi2, errors = Xevaluate(Cd, conf, thresh_start, thresh_peak, Xpeak, Xcenter, i)
+		print(chi2)
+
+		Xspectrum.append(histogram)
+		xray_list.append(parameters)
+		chi2_xray.append(chi2)
+
+
 
 #construct pandas DataFrame to store data to csv file
 df['run'] = run_list
