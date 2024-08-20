@@ -1,4 +1,4 @@
 from .config.py import *
 from .FitClass.py import *
-from .Funcs import *
+from .FitFuncs import *
 from .ManitobaSourceFits.py import *
