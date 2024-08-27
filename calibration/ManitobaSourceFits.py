@@ -181,13 +181,13 @@ for i in pixel_list:
 # 			bins = np.arange(thresh_start+2,SN.X1[1])
 			print(peak2,Xpeak,Xcenter,thresh_start,peak1)
             
-			if peak1>306 and Xpeak>20:
+			if peak1>306 and Xpeak>48:
 				conf['xray'] = 'five'
 				Xfit.append(5)
 # 				peak1,center1 = FitFuncs.get_peak(results,thresh_start+5,thresh_start+7)
 				bins = np.arange(thresh_start,SN.X1[1])
 				print('X five, pixel:%d'%i)
-				pars = [thresh_peak+400, 0, thresh_start+1, peak1, center1, 3, peak2, center2, 4, Xpeak, Xcenter, 5, 10, 1, 3, 5]
+				pars = [thresh_peak+400, 0, thresh_start, peak1, center1, 3, peak2, center2, 4, Xpeak, Xcenter, 5, 10, 1, 3, 5]
         
 			elif peak2<15 and Xpeak>18 or peak2/Xpeak<0.14:
 				conf['xray'] = 'three'
@@ -204,7 +204,7 @@ for i in pixel_list:
 # # 				peak1,center1 = FitFuncs.get_peak(results,thresh_start+5,thresh_start+7)
 # 				pars = [thresh_peak+400, 0, thresh_start+1, Xpeak, Xcenter, 3, 1, 1, 3, 5]
     
-			elif peak2<=25 and Xpeak>=19 or peak2/Xpeak<=0.43 or thresh_start>10.0:
+			elif peak2<=26 and Xpeak>=19 or peak2/Xpeak<=0.43 or thresh_start>10.0:
 # 				peak1,center1 = FitFuncs.get_peak(results,thresh_start+3,thresh_start+5)
 				bins = np.arange(thresh_start,SN.X1[1])
 				conf['xray'] = 'four'
