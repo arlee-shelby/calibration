@@ -25,7 +25,7 @@ class SnCalibration:
 
 		#define xray fit range and double gaussian range
 		self.X1 = [0.0,200.0]
-		self.X2 = [27.0,50.0]
+		self.X2 = [33.0,50.0]
 
 	#threshold gaussian
 	# def threshold(self,x,pars):
@@ -115,6 +115,9 @@ class SnCalibration:
 
 		if self.xray=='three':
 			return FitFuncs.threshold(x,pars[0:3]) + FitFuncs.double_gaus(x,pars[3:6],amp=amp,peak=peak) + pars[-4] + self.get_bckgrd(x,pars[-3:])
+        
+# 		if self.xray=='two':
+# 			return FitFuncs.threshold(x,pars[0:3]) + FitFuncs.gaussian(x,pars[3:6]) + pars[-4] + self.get_bckgrd(x,pars[-3:])
 
 		if self.xray=='zero':
 			return FitFuncs.threshold(x,pars[0:3]) + FitFuncs.gaussian(x,pars[3:6]) + pars[-4] + self.get_bckgrd(x,pars[-3:])

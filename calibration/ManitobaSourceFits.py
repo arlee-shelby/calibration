@@ -132,7 +132,7 @@ for i in pixel_list:
 		def CEevaluate(SN, conf, CEpeak1,CEcenter1,CEpeak2, CEcenter2,i):
 			conf['xray'] = 'OFF'
 			bins = np.arange(SN.CE1[0],SN.CE1[1])
-
+			print(CEpeak1,CEpeak2)
 			if CEpeak2>=7:
 				conf['capture'] = 'three'
 				CEfit.append(3)
@@ -144,7 +144,7 @@ for i in pixel_list:
 				print('CE two, pixel:%d'%i)
 				pars = [CEpeak1, CEcenter1, 5, CEpeak2, CEcenter2, 5, 1, 2, 1e-8, 1]
 
-			elif CEpeak2<=5 and CEpeak1>CEpeak2:
+			elif CEpeak2<=5 and CEpeak1>CEpeak2 and CEpeak1>2:
 				conf['capture'] = 'one'
 				CEfit.append(1)
 				print('CE one, pixel:%d'%i)
@@ -163,7 +163,8 @@ for i in pixel_list:
 
 			except Exception as e:
 				print(e,i,'failed upper fits')
-				return np.zeros(len(bins)-1),np.zeros(len(pars)),0,0
+				histogram, bin_edges = np.histogram(results.data()['energy'], bins = bins) 
+				return histogram,np.zeros(len(pars)),0,0
 
 
 		histogram, parameters, chi2, errors = CEevaluate(Sn, conf, CEpeak1, CEcenter1, CEpeak2, CEcenter2, i)
@@ -177,39 +178,58 @@ for i in pixel_list:
 		#Do same thing for the xray peaks, initialization based on amplitudes of peaks rather than counts
 		def Xevaluate(SN, conf, thresh_start, thresh_peak,peak2, center2, peak1,center1,Xpeak, Xcenter, i):
 			conf['capture'] = 'OFF'
-			bins = np.arange(thresh_start,SN.X1[1])
-			print(peak2,Xpeak,thresh_start,peak1)
+# 			bins = np.arange(thresh_start+2,SN.X1[1])
+			print(peak2,Xpeak,Xcenter,thresh_start,peak1)
             
-			if peak1>300:
+			if peak1>306 and Xpeak>20:
 				conf['xray'] = 'five'
 				Xfit.append(5)
 # 				peak1,center1 = FitFuncs.get_peak(results,thresh_start+5,thresh_start+7)
+				bins = np.arange(thresh_start,SN.X1[1])
 				print('X five, pixel:%d'%i)
-				pars = [thresh_peak+400, 0, thresh_start, peak1, center1, 3, peak2, center2, 4, Xpeak, Xcenter, 5, 10, 1, 3, 5]
+				pars = [thresh_peak+400, 0, thresh_start+1, peak1, center1, 3, peak2, center2, 4, Xpeak, Xcenter, 5, 10, 1, 3, 5]
         
-			elif peak2<=10 and Xpeak>=11 or peak2/Xpeak<=0.43:
+			elif peak2<19 and Xpeak>18:
+				conf['xray'] = 'three'
+				Xfit.append(3)
+				print('X three, pixel:%d'%i)
+				bins = np.arange(thresh_start+4,SN.X1[1])
+# 				peak1,center1 = FitFuncs.get_peak(results,thresh_start+5,thresh_start+7)
+				pars = [thresh_peak+400, 0, thresh_start, Xpeak, Xcenter, 6, 1, 1, 3, 5]
+    
+# 			elif peak2<15 and Xpeak<=20:
+# 				conf['xray'] = 'zero'
+# 				Xfit.append(2)
+# 				print('X zero, pixel:%d'%i)
+# # 				peak1,center1 = FitFuncs.get_peak(results,thresh_start+5,thresh_start+7)
+# 				pars = [thresh_peak+400, 0, thresh_start+1, Xpeak, Xcenter, 3, 1, 1, 3, 5]
+    
+			elif peak2<=10 and Xpeak>=19 or peak2/Xpeak<=0.43:
 # 				peak1,center1 = FitFuncs.get_peak(results,thresh_start+3,thresh_start+5)
+				bins = np.arange(thresh_start,SN.X1[1])
 				conf['xray'] = 'four'
 				Xfit.append(4)
 				print('X four, pixel:%d'%i)
 				pars = [thresh_peak+400, 0, thresh_start+1, peak1, center1, 4, Xpeak, Xcenter, 5, 10, 1, 3, 5]
                 
-			elif peak2>=10 and Xpeak>11 and peak2/Xpeak>0.43:
+			elif peak2>=10 and Xpeak>11 and peak2/Xpeak>0.60:
 				conf['xray'] = 'five'
+				bins = np.arange(thresh_start,SN.X1[1])
 				Xfit.append(5)
 # 				peak1,center1 = FitFuncs.get_peak(results,thresh_start+5,thresh_start+7)
 				print('X five, pixel:%d'%i)
 				pars = [thresh_peak+400, 0, thresh_start+1, peak1, center1, 3, peak2, center2, 4, Xpeak, Xcenter, 5, 10, 1, 3, 5]
 
 			elif peak1>10 and Xpeak>11:
+				bins = np.arange(thresh_start+4,SN.X1[1])
 				conf['xray'] = 'three'
 				Xfit.append(3)
 				print('X three, pixel:%d'%i)
 # 				peak1,center1 = FitFuncs.get_peak(results,thresh_start+5,thresh_start+7)
-				pars = [thresh_peak+400, 0, thresh_start, peak1, center1, 3, Xpeak, Xcenter, 4, 10, 1, 3, 5]
+				pars = [thresh_peak+400, 0, thresh_start, Xpeak, Xcenter, 4, 10, 1, 3, 5]
                 
-
 			else:
+				bins = np.arange(thresh_start,SN.X1[1])
 				conf['xray'] = 'zero'
 				Xfit.append(0)
 				print('X zero, pixel:%d'%i)
@@ -222,7 +242,8 @@ for i in pixel_list:
 
 			except Exception as e:
 				print(e,i,'failed lower fits')
-				return np.zeros(len(bins)-1),np.zeros(len(pars)),0,0
+				histogram, bin_edges = np.histogram(results.data()['energy'], bins = bins)              
+				return histogram,np.zeros(len(pars)),0,0
 
 
 		histogram, parameters, chi2, errors = Xevaluate(Sn, conf, thresh_start, thresh_peak, peak2, center2, peak1,center1,Xpeak, Xcenter, i)
