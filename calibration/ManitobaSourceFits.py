@@ -189,7 +189,7 @@ for i in pixel_list:
 				print('X five, pixel:%d'%i)
 				pars = [thresh_peak+400, 0, thresh_start+1, peak1, center1, 3, peak2, center2, 4, Xpeak, Xcenter, 5, 10, 1, 3, 5]
         
-			elif peak2<19 and Xpeak>18:
+			elif peak2<15 and Xpeak>18 or peak2/Xpeak<0.14:
 				conf['xray'] = 'three'
 				Xfit.append(3)
 				print('X three, pixel:%d'%i)
@@ -204,7 +204,7 @@ for i in pixel_list:
 # # 				peak1,center1 = FitFuncs.get_peak(results,thresh_start+5,thresh_start+7)
 # 				pars = [thresh_peak+400, 0, thresh_start+1, Xpeak, Xcenter, 3, 1, 1, 3, 5]
     
-			elif peak2<=10 and Xpeak>=19 or peak2/Xpeak<=0.43:
+			elif peak2<=25 and Xpeak>=19 or peak2/Xpeak<=0.43 or thresh_start>10.0:
 # 				peak1,center1 = FitFuncs.get_peak(results,thresh_start+3,thresh_start+5)
 				bins = np.arange(thresh_start,SN.X1[1])
 				conf['xray'] = 'four'
@@ -218,7 +218,7 @@ for i in pixel_list:
 				Xfit.append(5)
 # 				peak1,center1 = FitFuncs.get_peak(results,thresh_start+5,thresh_start+7)
 				print('X five, pixel:%d'%i)
-				pars = [thresh_peak+400, 0, thresh_start+1, peak1, center1, 3, peak2, center2, 4, Xpeak, Xcenter, 5, 10, 1, 3, 5]
+				pars = [thresh_peak+400, 0, thresh_start, peak1, center1, 3, peak2, center2, 4, Xpeak, Xcenter, 5, 10, 1, 3, 5]
 
 			elif peak1>10 and Xpeak>11:
 				bins = np.arange(thresh_start+4,SN.X1[1])
@@ -235,7 +235,7 @@ for i in pixel_list:
 				print('X zero, pixel:%d'%i)
 # 				peak1,center1 = FitFuncs.get_peak(results,thresh_start+5,thresh_start+7)
 				pars = [thresh_peak+400, 0, thresh_start, peak1, center1, 3, 10, 1, 3, 5]
-			print(peak1)
+
 			Sn  = SnCalibration()
 			try:
 				return Sn.fitter(results,bins,pars)
