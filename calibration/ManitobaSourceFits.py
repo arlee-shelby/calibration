@@ -148,7 +148,7 @@ for i in pixel_list:
 				conf['capture'] = 'one'
 				CEfit.append(1)
 				print('CE one, pixel:%d'%i)
-				pars = [CEpeak1, CEcenter1, 5, 1, 2, 1e-8, 1]
+				pars = [CEpeak1, CEcenter1, 6, 1, 2, 1e-8, 1]
 
 			else:
 				conf['capture'] = 'zero'
