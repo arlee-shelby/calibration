@@ -309,9 +309,9 @@ for i in pixel_list:
 
 		#record fit results and histogram
 
-		histogram_list.append(histogram1)
-		parameters_list.append(parameters1)
-		chi2e.append(chi21)
+		histogram_list.append(histogram1.tolist())
+		parameters_list.append(parameters1.tolist())
+		chi2e.append(float(chi21))
 
 		def CEevaluate2(CD, conf, CEpeak2, CEcenter2,i):
 			conf['xray'] = 'OFF'
@@ -349,36 +349,36 @@ for i in pixel_list:
 
 		#record fit results and histogram
 
-		histogram_list.append(histogram2)
-		parameters_list.append(parameters2)
-		chi2e.append(chi22)
+		histogram_list.append(histogram2.tolist())
+		parameters_list.append(parameters2.tolist())
+		chi2e.append(float(chi22))
 
 		CEfit.append(CEfit_list)
-		Xspectrum.append(histogram_list)
-		xray_list.append(parameters_list)
-		chi2_xray.append(chi2e)
+		CEspectrum.append(histogram_list)
+		ecap_list.append(parameters_list)
+		chi2_ecap.append(chi2e)
 
 		def Xevaluate(CD, conf, thresh_start, thresh_peak, Xpeak, Xcenter, i):
 			conf['capture1'] = 'OFF'
 			conf['capture2']= 'OFF'
 			bins = np.arange(thresh_start,CD.X1[1])
-			if Xpeak>=7:
+			if Xpeak>=50:
 				conf['xray'] = 'three'
 				Xfit.append(3)
 				print('X three, pixel:%d'%i)
-				pars = [thresh_peak+400, 0, thresh_start+1, Xpeak, Xcenter, 4, 10, 1, 3, 5]
+				pars = [thresh_peak+200, 0, thresh_start+1, Xpeak, Xcenter, 5, 1, 1, 3, 5]
 
-			elif Xpeak>=5:
+			elif Xpeak>=20:
 				conf['xray'] = 'two'
 				Xfit.append(3)
 				print('X three, pixel:%d'%i)
-				pars = [thresh_peak+400, 0, thresh_start+1, Xpeak, Xcenter, 4, 10, 1, 3, 5]
+				pars = [thresh_peak+200, 0, thresh_start+1, Xpeak, Xcenter, 5, 1, 1, 3, 5]
 
 			else:
 				conf['xray'] = 'zero'
 				Xfit.append(0)
 				print('X zero, pixel:%d'%i)
-				pars = [thresh_peak+400, 0, thresh_start,10, 1, 3, 5]
+				pars = [thresh_peak+200, 0, thresh_start, 1, 1, 3, 5]
 
 			Cd = CdCalibration()
 			try:
