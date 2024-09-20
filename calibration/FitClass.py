@@ -1,6 +1,7 @@
 import numpy as np
 from config import conf
 from scipy.optimize import curve_fit
+from scipy.interpolate import UnivariateSpline
 import FitFuncs
 
 #define Sn source class
@@ -16,7 +17,7 @@ class SnCalibration:
 		self.CEpeak = 390.872/387.461
 
 		#define histogram range and double gaussian range
-		self.CE1 = [300.0,1400.0]
+		self.CE1 = [450.0,850.0]
 		self.CE2 = [622.0,700.0]
 
 		#define intensity and energy ratios for xray fit
@@ -24,7 +25,7 @@ class SnCalibration:
 		self.Xpeak = 27.3523/22.59
 
 		#define xray fit range and double gaussian range
-		self.X1 = [0.0,200.0]
+		self.X1 = [0.0,70.0]
 		self.X2 = [33.0,50.0]
 
 	#threshold gaussian
@@ -70,9 +71,9 @@ class SnCalibration:
 			y[extrap_reg] = (FitFuncs.line2(x[extrap_reg],pars[1:])-FitFuncs.line1(x[extrap_reg],pars[:2]))/len(extrap_reg)
 			y[x<reg[0]] = FitFuncs.line1(x[x<reg[0]],pars[:2])
 			y[x>reg[1]] = FitFuncs.line2(x[x>reg[1]],pars[1:])
-			return y
+			return UnivariateSpline(x, y, k=1)(x)
 
-		elif self.capture == 'OFF':
+		elif self.xray!='OFF':
 			return FitFuncs.poly(x,pars)
 
 	#define multiple gaussian function
@@ -90,17 +91,18 @@ class SnCalibration:
 		if self.capture =='three':
 			reg[0] = pars[1]-pars[2]
 			reg[1] = (pars[4]*self.CEpeak)+pars[5]
-			return FitFuncs.gaussian(x,pars[0:3]) + FitFuncs.double_gaus(x,pars[3:6],amp=amp,peak=peak) + pars[-4] + self.get_bckgrd(x,pars[-3:],reg)
+			return FitFuncs.gaussian(x,pars[0:3]) + FitFuncs.double_gaus(x,pars[3:6],amp=amp,peak=peak) + pars[-4] + self.get_bckgrd(x,pars[-3:],reg=reg)
 
 		if self.capture =='two':
 			reg[0] = pars[1]-pars[2]
 			reg[1] =pars[4]+pars[5]
-			return FitFuncs.gaussian(x,pars[0:3]) + FitFuncs.gaussian(x,pars[3:6]) + pars[-4] + self.get_bckgrd(x,pars[-3:],reg)
+			print(reg)            
+			return FitFuncs.gaussian(x,pars[0:3]) + FitFuncs.gaussian(x,pars[3:6]) + pars[-4] + self.get_bckgrd(x,pars[-3:],reg=reg)
 
 		if self.capture =='one':
-			reg[0] = pars[1]-pars[2]
-			reg[1] =pars[1]+pars[2]
-			return FitFuncs.gaussian(x,pars[0:3]) + pars[-4] + self.get_bckgrd(x,pars[-3:],reg)
+			reg[0] = pars[1]- pars[2]
+			reg[1] =pars[1]+ pars[2]
+			return FitFuncs.gaussian(x,pars[0:3]) + pars[-4] + self.get_bckgrd(x,pars[-3:],reg=reg)
 
 		if self.capture =='zero':
 			return 0.0 + self.get_bckgrd(x,pars[-3:])
@@ -121,6 +123,10 @@ class SnCalibration:
 
 		if self.xray=='zero':
 			return FitFuncs.threshold(x,pars[0:3]) + FitFuncs.gaussian(x,pars[3:6]) + pars[-4] + self.get_bckgrd(x,pars[-3:])
+        
+		if self.xray=='ON':
+            
+			return FitFuncs.threshold(x,pars[0:3]) + FitFuncs.double_gaus(x,pars[3:6],amp=self.Xamp,peak=self.Xpeak) + pars[-4] + self.get_bckgrd(x,pars[-3:]) + FitFuncs.gaussian(x,pars[6:9])
 
 
 	#do fit
@@ -141,6 +147,7 @@ class CdCalibration:
 		self.capture1 = conf['capture1']
 		self.capture2 = conf['capture2']
 		self.xray = conf['xray']
+		self.new = conf['new']
 
 		#define CE intensity and energy location ratio 
 		self.CEamp = 10.46/44.2
@@ -157,6 +164,7 @@ class CdCalibration:
 		#define xray fit range and double gaussian range
 		self.X1 = [0.0,60.0]
 		self.X2 = [25.0,50.0]
+		self.range = [0.0,300.0]        
 
 	def get_bckgrd(self,x,pars,reg=None):
 
@@ -170,9 +178,9 @@ class CdCalibration:
 			y[extrap_reg] = (FitFuncs.line2(x[extrap_reg],pars[1:])-FitFuncs.line1(x[extrap_reg],pars[:2]))/len(extrap_reg)
 			y[x<reg[0]] = FitFuncs.line1(x[x<reg[0]],pars[:2])
 			y[x>reg[1]] = FitFuncs.line2(x[x>reg[1]],pars[1:])
-			return y
+			return UnivariateSpline(x, y, k=1)(x)
 
-		elif self.xray != 'OFF':
+		elif self.xray != 'OFF' or self.new == 'ON':
 			return FitFuncs.poly(x,pars)
 
 	def get_fit(self,x,*pars):
@@ -214,7 +222,16 @@ class CdCalibration:
 		if self.xray == 'zero':
 			return FitFuncs.threshold(x,pars[0:3]) + pars[-4] + self.get_bckgrd(x,pars[-3:])
 
-
+		if self.new=='ON':
+			xray =  FitFuncs.double_gaus(x,pars[3:6],amp=self.Xamp,peak=self.Xpeak)
+			thresh = FitFuncs.threshold(x,pars[0:3]) 
+			#+ FitFuncs.gaussian(x,pars[12:15])
+			bck = self.get_bckgrd(x,pars[-3:])
+			cap2 = FitFuncs.double_gaus(x,pars[9:12],amp=self.CEamp,peak=self.CEpeak)
+			cap1 = FitFuncs.gaussian(x,pars[6:9])
+			offset = pars[-4]
+			return xray + bck + cap1 + cap2 + offset + thresh           
+            
 	def fitter(self,results,bins,pars):
 		histogram, bin_edges = np.histogram(results.data()['energy'], bins = bins)
 
