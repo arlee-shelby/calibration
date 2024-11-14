@@ -12,7 +12,7 @@ def get_peak(results,x1,x2):
 
 #define threshold gaussian
 def threshold(x,pars):
-	return pars[0]*np.exp(-1.0 * (x/pars[2])**2.0)
+	return pars[0]*np.exp(-1.0 * (x/pars[1])**2.0)
 
 #define background polynomial for low lying peaks
 def poly(x,pars):
@@ -28,7 +28,7 @@ def line1(x,pars):
 
 #define higher lying peak background 2
 def line2(x,pars):
-	return -pars[0]*x + pars[1]
+	return pars[0]*x + pars[1]
 
 #define double gaussian with peak and apmlitude ratio options
 def double_gaus(x,pars,amp=1.0,peak=1.0):

@@ -22,10 +22,10 @@ class SnCalibration:
 
 		#define intensity and energy ratios for xray fit
 		self.Xamp = 16.05/79.8
-		self.Xpeak = 27.3523/22.59
+		self.Xpeak = 27.3523769470405/24.13701754385965
 
 		#define xray fit range and double gaussian range
-		self.X1 = [0.0,70.0]
+		self.X1 = [0.0,100.0]
 		self.X2 = [33.0,50.0]
 
 	#threshold gaussian
@@ -95,8 +95,8 @@ class SnCalibration:
 
 		if self.capture =='two':
 			reg[0] = pars[1]-pars[2]
-			reg[1] =pars[4]+pars[5]
-			print(reg)            
+			reg[1] =(pars[4]*self.CEpeak)+pars[5]
+# 			print(reg)            
 			return FitFuncs.gaussian(x,pars[0:3]) + FitFuncs.gaussian(x,pars[3:6]) + pars[-4] + self.get_bckgrd(x,pars[-3:],reg=reg)
 
 		if self.capture =='one':
@@ -110,23 +110,22 @@ class SnCalibration:
 
 		#define xray gaussian fits, based on height of amplitudes of the various peaks seen
 		if self.xray=='five':
-			return FitFuncs.threshold(x,pars[0:3]) + FitFuncs.gaussian(x,pars[3:6]) + FitFuncs.gaussian(x,pars[6:9]) + FitFuncs.double_gaus(x,pars[9:12],amp=amp,peak=peak) + pars[-4] + self.get_bckgrd(x,pars[-3:])
+			return FitFuncs.threshold(x,pars[0:2]) + FitFuncs.gaussian(x,pars[2:5]) + FitFuncs.gaussian(x,pars[5:8]) + FitFuncs.double_gaus(x,pars[8:11],amp=amp,peak=peak) + pars[-4] + self.get_bckgrd(x,pars[-3:])
 
 		if self.xray=='four':
-			return FitFuncs.threshold(x,pars[0:3]) + FitFuncs.gaussian(x,pars[3:6]) + FitFuncs.double_gaus(x,pars[6:9],amp=amp,peak=peak) + pars[-4] + self.get_bckgrd(x,pars[-3:])
+			return FitFuncs.threshold(x,pars[0:2]) + FitFuncs.gaussian(x,pars[2:5]) + FitFuncs.double_gaus(x,pars[5:8],amp=amp,peak=peak) + pars[-4] + self.get_bckgrd(x,pars[-3:])
 
 		if self.xray=='three':
-			return FitFuncs.threshold(x,pars[0:3]) + FitFuncs.double_gaus(x,pars[3:6],amp=amp,peak=peak) + pars[-4] + self.get_bckgrd(x,pars[-3:])
+			return FitFuncs.threshold(x,pars[0:2]) + FitFuncs.double_gaus(x,pars[2:5],amp=amp,peak=peak) + pars[-4] + self.get_bckgrd(x,pars[-3:])
         
 # 		if self.xray=='two':
 # 			return FitFuncs.threshold(x,pars[0:3]) + FitFuncs.gaussian(x,pars[3:6]) + pars[-4] + self.get_bckgrd(x,pars[-3:])
 
 		if self.xray=='zero':
-			return FitFuncs.threshold(x,pars[0:3]) + FitFuncs.gaussian(x,pars[3:6]) + pars[-4] + self.get_bckgrd(x,pars[-3:])
+			return FitFuncs.threshold(x,pars[0:2]) + FitFuncs.gaussian(x,pars[2:5]) + pars[-4] + self.get_bckgrd(x,pars[-3:])
         
 		if self.xray=='ON':
-            
-			return FitFuncs.threshold(x,pars[0:3]) + FitFuncs.double_gaus(x,pars[3:6],amp=self.Xamp,peak=self.Xpeak) + pars[-4] + self.get_bckgrd(x,pars[-3:]) + FitFuncs.gaussian(x,pars[6:9])
+			return FitFuncs.threshold(x,pars[0:2]) + FitFuncs.double_gaus(x,pars[2:5],amp=self.Xamp,peak=self.Xpeak) + pars[-4] + self.get_bckgrd(x,pars[-3:]) + FitFuncs.gaussian(x,pars[5:8])
 
 
 	#do fit
@@ -135,7 +134,7 @@ class SnCalibration:
 
 		width = bin_edges[1]-bin_edges[0]
 
-		parameters, errors = curve_fit(self.get_fit, bin_edges[:-1]+width/2, histogram, p0 = pars)
+		parameters, errors = curve_fit(self.get_fit, bin_edges[:-1]+width/2, histogram, p0 = pars,maxfev = 6000)
 
 		chi2 = sum((histogram-self.get_fit(bin_edges[:-1]+width/2,*parameters))**2)/(len(bin_edges[:-1]+width/2)-len(parameters))
 
@@ -144,8 +143,8 @@ class SnCalibration:
 class CdCalibration:
 	def __init__(self):
 		#initialize conf to determine if performing xray or CE fits
-		self.capture1 = conf['capture1']
-		self.capture2 = conf['capture2']
+		self.capture = conf['capture']
+# 		self.capture = conf['capture']
 		self.xray = conf['xray']
 		self.new = conf['new']
 
@@ -154,12 +153,12 @@ class CdCalibration:
 		self.CEpeak = 87.39998556405354/84.2278
 
 		#define histogram range and double gaussian range
-		self.CE1 = [75.0,110.0]
-		self.CE2 = [120.0,160.0]
+		self.CE1 = [60.0,110.0]
+		self.CE2 = [120.0,250.0]
 
 		#define intensity and energy ratios for xray fit
 		self.Xamp = 16.41/85.9
-		self.Xpeak = 25.00863802559415/22.102983701979042
+		self.Xpeak = 25.006005484460694/22.102983701979042
 
 		#define xray fit range and double gaussian range
 		self.X1 = [0.0,60.0]
@@ -170,10 +169,10 @@ class CdCalibration:
 
 		y = np.zeros(x.shape)
 
-		if self.capture1 == 'zero' or self.capture2 == 'zero':
+		if self.capture == 'zero':
 			return FitFuncs.line1(x,pars[:2])
 
-		if self.capture1 !='OFF' or self.capture2 !='OFF':
+		if self.capture !='OFF':
 			extrap_reg = np.logical_and(x>reg[0],x<reg[1])
 			y[extrap_reg] = (FitFuncs.line2(x[extrap_reg],pars[1:])-FitFuncs.line1(x[extrap_reg],pars[:2]))/len(extrap_reg)
 			y[x<reg[0]] = FitFuncs.line1(x[x<reg[0]],pars[:2])
@@ -186,42 +185,58 @@ class CdCalibration:
 	def get_fit(self,x,*pars):
 		reg = {}
 
-		if self.xray=='OFF' and self.capture1=='OFF':
+		if self.xray=='OFF':
 			amp = self.CEamp
 			peak = self.CEpeak
 
-		if self.capture1=='OFF' and self.capture2=='OFF':
+		if self.capture=='OFF':
 			amp = self.Xamp
 			peak = self.Xpeak
 
-		if self.capture1=='ON':
-			reg[0] = pars[1]-pars[2]
-			reg[1] =pars[1]+pars[2]
-			return FitFuncs.gaussian(x,pars[0:3]) + pars[-4] + self.get_bckgrd(x,pars[-3:],reg)
+# 		if self.capture1=='ON':
+# 			reg[0] = pars[1]-pars[2]
+# 			reg[1] =pars[1]+pars[2]
+# 			return FitFuncs.gaussian(x,pars[0:3]) + pars[-4] + self.get_bckgrd(x,pars[-3:],reg)
 
-		if self.capture1 =='zero' or self.capture2 =='zero':
+		if self.capture =='zero':
 			return 0.0 + self.get_bckgrd(x,pars[-3:])
 
-		if self.capture2=='two':
+		if self.capture=='three':
 			reg[0] = pars[1]-pars[2]
-			reg[1] = (pars[1]*self.CEpeak)+pars[2]
-			return FitFuncs.double_gaus(x,pars[0:3],amp=amp,peak=peak) + pars[-4] + self.get_bckgrd(x,pars[-3:],reg)
+			reg[1] = (pars[4]*self.CEpeak)+pars[5]
+			return FitFuncs.gaussian(x,pars[0:3]) + FitFuncs.double_gaus(x,pars[3:6],amp=amp,peak=peak) + pars[-4] + self.get_bckgrd(x,pars[-3:],reg=reg)
 
-		if self.capture2=='one':
+		if self.capture =='two':
+			reg[0] = pars[1]-pars[2]
+			reg[1] =(pars[4]*self.CEpeak)+pars[5]
+# 			print(reg)            
+			return FitFuncs.gaussian(x,pars[0:3]) + FitFuncs.gaussian(x,pars[3:6]) + pars[-4] + self.get_bckgrd(x,pars[-3:],reg=reg)
+
+		if self.capture=='one':
 			reg[0] = pars[1]-pars[2]
 			reg[1] = pars[1]+pars[2]
 			return FitFuncs.gaussian(x,pars[0:3]) + pars[-4] + self.get_bckgrd(x,pars[-3:],reg)
+        
+		if self.capture =='zero':
+			return 0.0 + self.get_bckgrd(x,pars[-3:])
 
 
-		if self.xray== 'three':
-			return FitFuncs.threshold(x,pars[0:3]) + FitFuncs.double_gaus(x,pars[3:6],amp=amp,peak=peak) +FitFuncs.gaussian(x,pars[6:9]) + pars[-4] + self.get_bckgrd(x,pars[-3:])
+		if self.xray=='five':
+			return FitFuncs.threshold(x,pars[0:2]) + FitFuncs.gaussian(x,pars[2:5]) + FitFuncs.gaussian(x,pars[5:8]) + FitFuncs.double_gaus(x,pars[8:11],amp=amp,peak=peak) + pars[-4] + self.get_bckgrd(x,pars[-3:])
 
-		if self.xray == 'two':
-			return FitFuncs.threshold(x,pars[0:3]) + FitFuncs.gaussian(x,pars[3:6]) + pars[-4] + self.get_bckgrd(x,pars[-3:])
+		if self.xray=='four':
+			return FitFuncs.threshold(x,pars[0:2]) + FitFuncs.gaussian(x,pars[2:5]) + FitFuncs.double_gaus(x,pars[5:8],amp=amp,peak=peak) + pars[-4] + self.get_bckgrd(x,pars[-3:])
 
-		if self.xray == 'zero':
-			return FitFuncs.threshold(x,pars[0:3]) + pars[-4] + self.get_bckgrd(x,pars[-3:])
+		if self.xray=='three':
+			return FitFuncs.threshold(x,pars[0:2]) + FitFuncs.double_gaus(x,pars[2:5],amp=amp,peak=peak) + pars[-4] + self.get_bckgrd(x,pars[-3:])
+        
+# 		if self.xray=='two':
+# 			return FitFuncs.threshold(x,pars[0:3]) + FitFuncs.gaussian(x,pars[3:6]) + pars[-4] + self.get_bckgrd(x,pars[-3:])
 
+		if self.xray=='zero':
+			return FitFuncs.threshold(x,pars[0:2]) + FitFuncs.gaussian(x,pars[2:5]) + pars[-4] + self.get_bckgrd(x,pars[-3:])
+        
+        
 		if self.new=='ON':
 			xray =  FitFuncs.double_gaus(x,pars[3:6],amp=self.Xamp,peak=self.Xpeak)
 			thresh = FitFuncs.threshold(x,pars[0:3]) 
