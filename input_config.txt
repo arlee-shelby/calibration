@@ -2,6 +2,6 @@ nabPy					/storage/home/hcoda1/4/ashelby8/Manitoba/pyNab/src
 slowData				/storage/home/hcoda1/4/ashelby8/calibration/manitobametadata_filters.csv
 pixels					76,77,78,87,88,96,97,98,101,103,105,106,107,113,114,115,116,121,122,123,124
 output					/storage/home/hcoda1/4/ashelby8/
-Cd109					False
-Sn113 					True
+Cd109					True
+Sn113 					False
 TrapPars				1250	50		1250
