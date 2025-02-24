@@ -1,6 +1,9 @@
+from base import Base
+from sqlalchemy.orm import relationship
+
 import numpy as np
 
-class Fitter():
+class Fitter(Base):
     def threshold(x,pars):
 	    return pars[0]*np.exp(-1.0 * (x/pars[1])**2.0)
 

@@ -365,19 +365,20 @@ for i in pixel_list:
 # 			bins = np.arange(thresh_start+2,SN.X1[1])
 			print(peak2,Xpeak,Xcenter,thresh_start,peak1)
             
-			if peak1>306 and Xpeak>48:
+			if peak1>306 and Xpeak>38 and peak2/Xpeak >0.6:
+# 			XPeak was at 48 (before 1326 Cd data)
 				conf['xray'] = 'five'
 				X = 5
 # 				peak1,center1 = FitFuncs.get_peak(results,thresh_start+5,thresh_start+7)
 				bins = np.arange(thresh_start,CD.X1[1])
 				print('X five, pixel:%d'%i)
-				pars = [thresh_peak+400, thresh_start, peak1, center1, 3, peak2, center2, 4, Xpeak, Xcenter, 5,  1, 1, 1e-2, 1e-5]
-        
-			elif peak2<12 and Xpeak>18 and peak1<20 or peak2/Xpeak<0.125:
+				pars = [thresh_peak+400, thresh_start, peak1, center1, 3, peak2, center2, 4, Xpeak, Xcenter, 5,  1, 1, 1e-2, 1e-5]           
+			elif peak2<11 and Xpeak>18 and peak1<28:
+# 				peak2/Xpeak<0.125
 				conf['xray'] = 'three'
 				X = 3
 				print('X three, pixel:%d'%i)
-				bins = np.arange(thresh_start,CD.X1[1])
+				bins = np.arange(thresh_start+2,CD.X1[1])
 # 				peak1,center1 = FitFuncs.get_peak(results,thresh_start+5,thresh_start+7)
 				pars = [thresh_peak+400, thresh_start, Xpeak, Xcenter, 5,  1, 1, 1e-2, 1e-5]
     
@@ -387,8 +388,7 @@ for i in pixel_list:
 # 				print('X zero, pixel:%d'%i)
 # # 				peak1,center1 = FitFuncs.get_peak(results,thresh_start+5,thresh_start+7)
 # 				pars = [thresh_peak+400, 0, thresh_start+1, Xpeak, Xcenter, 3, 1, 1, 3, 5]
-    
-			elif peak2<=26 and Xpeak>=19 or peak2/Xpeak<=0.43 or thresh_start>10.0:
+			elif (peak2<=26 and Xpeak>=19) or peak2/Xpeak<=0.43 or thresh_start>10.0:
 # 				peak1,center1 = FitFuncs.get_peak(results,thresh_start+3,thresh_start+5)
 				bins = np.arange(thresh_start+1,CD.X1[1])
 				conf['xray'] = 'four'
@@ -403,6 +403,8 @@ for i in pixel_list:
 				X = 5
 # 				peak1,center1 = FitFuncs.get_peak(results,thresh_start+5,thresh_start+7)
 				print('X five, pixel:%d'%i)
+				print('trying 5 again')
+				print(peak2/Xpeak)
 				pars = [thresh_peak+400, thresh_start, peak1, center1, 3, peak2, center2, 4, Xpeak, Xcenter, 5,  1, 1, 1e-2, 1e-5]
 
 			elif peak1>10 and Xpeak>11:
